@@ -4,17 +4,861 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>母亲每日执行面板</title>
+    <style>
+        :root {
+            --color-primary: #217f8d;
+            --color-primary-hover: #1d7480;
+            --color-primary-active: #1a6873;
+            --color-bg-primary: #fcfcf9;
+            --color-bg-secondary: #ffffff;
+            --color-text-primary: #134252;
+            --color-text-secondary: #626c71;
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-success: #217f8d;
+            --color-warning: #a84d2f;
+            --color-error: #c0152f;
+            --color-info: #626c71;
+            --radius-base: 8px;
+            --radius-lg: 12px;
+            --space-16: 16px;
+            --space-20: 20px;
+            --space-24: 24px;
+            --space-32: 32px;
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: var(--space-20);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: var(--space-32);
+            padding-bottom: var(--space-20);
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        h1 {
+            margin: 0 0 var(--space-16) 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .date-info {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+        }
+
+        .role-badge {
+            display: inline-block;
+            background-color: rgba(33, 128, 141, 0.1);
+            color: var(--color-primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: var(--space-16);
+        }
+
+        /* 页面容器 */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* 导航按钮 */
+        .nav-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-16);
+            margin-bottom: var(--space-32);
+        }
+
+        .nav-btn {
+            padding: var(--space-16);
+            border: 2px solid var(--color-border);
+            background-color: var(--color-bg-secondary);
+            border-radius: var(--radius-base);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: var(--color-text-primary);
+        }
+
+        .nav-btn:hover {
+            border-color: var(--color-primary);
+            background-color: rgba(33, 128, 141, 0.05);
+        }
+
+        .nav-btn.active {
+            background-color: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* 任务卡片 */
+        .section {
+            background-color: var(--color-bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-24);
+            margin-bottom: var(--space-24);
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-md);
+        }
+
+        .section h2 {
+            margin: 0 0 var(--space-20) 0;
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-icon {
+            font-size: 32px;
+        }
+
+        /* 步骤列表 */
+        .steps {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .step-item {
+            display: flex;
+            gap: var(--space-16);
+            margin-bottom: var(--space-20);
+            padding-bottom: var(--space-20);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .step-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .step-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            width: 40px;
+            height: 40px;
+            background-color: var(--color-primary);
+            color: white;
+            border-radius: 50%;
+            font-weight: 600;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .step-content p {
+            margin: 0 0 8px 0;
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .step-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .checkpoint {
+            background-color: rgba(33, 128, 141, 0.08);
+            border-left: 4px solid var(--color-success);
+            padding: var(--space-16);
+            border-radius: var(--radius-base);
+            margin-top: var(--space-16);
+            font-size: 13px;
+        }
+
+        .checkpoint-title {
+            font-weight: 600;
+            color: var(--color-success);
+            margin-bottom: 8px;
+        }
+
+        /* 警告框 */
+        .alert {
+            background-color: rgba(192, 21, 47, 0.08);
+            border-left: 4px solid var(--color-error);
+            padding: var(--space-16);
+            border-radius: var(--radius-base);
+            margin-bottom: var(--space-16);
+        }
+
+        .alert-title {
+            font-weight: 600;
+            color: var(--color-error);
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .alert-content {
+            color: var(--color-text-secondary);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        /* 进度跟踪 */
+        .progress-section {
+            margin-top: var(--space-32);
+            padding-top: var(--space-24);
+            border-top: 1px solid var(--color-border);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background-color: var(--color-border);
+            border-radius: 6px;
+            margin-top: var(--space-16);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--color-primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin: var(--space-20) 0 0 0;
+        }
+
+        .checklist li {
+            display: flex;
+            align-items: center;
+            gap: var(--space-12);
+            padding: var(--space-12);
+            margin-bottom: var(--space-8);
+            background-color: var(--color-bg-primary);
+            border-radius: var(--radius-base);
+            border-left: 4px solid var(--color-primary);
+        }
+
+        .checklist input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--color-primary);
+        }
+
+        .checklist li label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .checklist li input:checked + label {
+            text-decoration: line-through;
+            color: var(--color-text-secondary);
+        }
+
+        /* 返回按钮 */
+        .back-btn {
+            display: inline-block;
+            padding: var(--space-12) var(--space-16);
+            background-color: var(--color-border);
+            color: var(--color-text-primary);
+            border: none;
+            border-radius: var(--radius-base);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: var(--space-24);
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: var(--space-16);
+            margin-top: var(--space-20);
+        }
+
+        .summary-card {
+            background-color: var(--color-bg-primary);
+            padding: var(--space-16);
+            border-radius: var(--radius-base);
+            border: 1px solid var(--color-border);
+            text-align: center;
+        }
+
+        .summary-card-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: 8px;
+        }
+
+        .summary-card-label {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            font-weight: 500;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: var(--space-32);
+            padding-top: var(--space-20);
+            border-top: 1px solid var(--color-border);
+            color: var(--color-text-secondary);
+            font-size: 12px;
+        }
+    </style>
 </head>
 <body>
-    <h1>母亲每日执行面板</h1>
-    <p>页面正在建设中...</p>
-    <p>注意：这是一个临时页面。请按照以下步骤上传完整的HTML文件：</p>
-    <ol>
-        <li>访问 GitHub 仓库</li>
-        <li>点击 index.html 文件</li>
-        <li>点击编辑按钮（铅笔图标）</li>
-        <li>复制完整的 HTML 代码并粘贴替换当前内容</li>
-        <li>提交更改</li>
-    </ol>
+    <div class="container">
+        <header>
+            <h1>🧭 母亲每日执行面板</h1>
+            <p class="date-info" id="dateInfo"></p>
+            <div class="role-badge">
+                👩 电商能力构建 · 售前&售中 · 基础交付
+            </div>
+        </header>
+
+        <!-- 主菜单页面 -->
+        <div id="menuPage" class="page active">
+            <section class="section">
+                <h2><span class="section-icon">🎯</span> 今日 3 件事（选择任务）</h2>
+                <p style="color: var(--color-text-secondary); margin-bottom: var(--space-24);">
+                    点击下方任务卡片，进入详细步骤和检查点
+                </p>
+                
+                <div class="nav-buttons">
+                    <button class="nav-btn" onclick="showPage('task1')">
+                        📋 售前<br>清未读
+                    </button>
+                    <button class="nav-btn" onclick="showPage('task2')">
+                        🚀 售中<br>交付1单
+                    </button>
+                    <button class="nav-btn" onclick="showPage('task3')">
+                        📝 复盘<br>记卡点
+                    </button>
+                    <button class="nav-btn" onclick="showPage('checklist')">
+                        ✅ 家庭<br>协作检查
+                    </button>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2><span class="section-icon">📊</span> 今日进度</h2>
+                <div class="summary">
+                    <div class="summary-card">
+                        <div class="summary-card-value" id="completedCount">0</div>
+                        <div class="summary-card-label">已完成任务</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-card-value">3</div>
+                        <div class="summary-card-label">总任务数</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-card-value" id="completionRate">0%</div>
+                        <div class="summary-card-label">完成率</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 任务1：售前清未读 -->
+        <div id="task1" class="page">
+            <button class="back-btn" onclick="showPage('menuPage')">← 返回主菜单</button>
+            
+            <section class="section">
+                <h2><span class="section-icon">📋</span> 售前：清一次未读</h2>
+                <p style="color: var(--color-text-secondary); margin-bottom: var(--space-20);">
+                    ⏰ 何时做：上午 OR 晚上任选一次
+                </p>
+
+                <ol class="steps">
+                    <li class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>打开固定入口 → 查看未读列表</h3>
+                            <p>进入售前工作表，找出所有待处理的客户消息</p>
+                            <p style="color: var(--color-info); font-style: italic;">提示：找"未读"标签或"待处理"状态</p>
+                        </div>
+                    </li>
+                    <li class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>用固定话术回复</h3>
+                            <p>不需要自己组织话术，直接用系统提供的"标准回复"</p>
+                            <p style="color: var(--color-info); font-style: italic;">提示：从"话术库"找到对应场景的回复</p>
+                        </div>
+                    </li>
+                    <li class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>标记状态：清零或待裁决</h3>
+                            <p>• 能自己回复的 → 标记"已处理"</p>
+                            <p>• 不确定的 → 标记"待裁决"，@管理员</p>
+                            <p style="color: var(--color-info); font-style: italic;">重点：不清楚就问，别自作聪明</p>
+                        </div>
+                    </li>
+                    <li class="step-item">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3>记录截图</h3>
+                            <p>完成后截图，作为今日复盘的证据</p>
+                            <p style="color: var(--color-info); font-style: italic;">提示：截图显示"已处理"或"待裁决"的标记状态</p>
+                        </div>
+                    </li>
+                </ol>
+
+                <div class="checkpoint">
+                    <div class="checkpoint-title">✓ 检查点（完成标志）</div>
+                    未读清零或全部标记"待裁决"
+                </div>
+
+                <div class="progress-section">
+                    <h3>任务检查清单</h3>
+                    <ul class="checklist">
+                        <li>
+                            <input type="checkbox" id="task1-1" onchange="updateProgress()">
+                            <label for="task1-1">步骤1：打开工作表，找出未读消息</label>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="task1-2" onchange="updateProgress()">
+                            <label for="task1-2">步骤2：用固定话术回复</label>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="task1-3" onchange="updateProgress()">
+                            <label for="task1-3">步骤3：标记"已处理"或"待裁决"</label>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="task1-4" onchange="updateProgress()">
+                            <label for="task1-4">步骤4：截图保存</label>
+                        </li>
+                    </ul>
+                </div>
+
+                <div style="background-color: rgba(168, 75, 47, 0.08); padding: var(--space-20); border-radius: var(--radius-lg); border-left: 4px solid var(--color-warning); margin-top: var(--space-24);">
+                    <h3 style="margin: 0 0 var(--space-16) 0; font-size: 16px; color: var(--color-warning);">💬 遇到问题？反馈这里</h3>
+                    <p style="margin: 0 0 var(--space-12) 0; color: var(--color-text-secondary); font-size: 13px;">
+                        告诉管理员你卡在哪里了，有什么疑问，或需要什么支持
+                    </p>
+                    <textarea id="feedback-task1" style="width: 100%; height: 120px; padding: var(--space-12); border: 1px solid var(--color-border); border-radius: var(--radius-base); font-family: inherit; font-size: 14px; resize: vertical;" placeholder="例如：不知道怎么区分哪些消息算'未读'&#10;或：有个客户的需求我不确定怎么回"></textarea>
+                    <button onclick="submitFeedback('task1')" style="margin-top: var(--space-12); padding: var(--space-12) var(--space-16); background-color: var(--color-warning); color: white; border: none; border-radius: var(--radius-base); cursor: pointer; font-weight: 500; transition: all 0.3s ease;">
+                        📤 提交反馈给管理员
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- 任务2：售中交付 -->
+        <div id="task2" class="page">
+            <button class="back-btn" onclick="showPage('menuPage')">← 返回主菜单</button>
+            
+            <section class="section">
+                <h2><span class="section-icon">🚀</span> 售中：交付 1 单或演练</h2>
+                <p style="color: var(--color-text-secondary); margin-bottom: var(--space-20);">
+                    ⏰ 何时做：今晚 18:00 后执行
+                </p>
+
+                <ol class="steps">
+                    <li class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>选择标准 SKU（只卖这几个）</h3>
+                            <p>确认售前已经承诺的产品，准备开始交付</p>
+                            <p style="color: var(--color-warning);">⚠️ 不要超出标准 SKU 范围</p>
+                        </div>
+                    </li>
+                    <li class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>按步骤单交付</h3>
+                            <p>按照"交付动作包"的步骤逐项完成：</p>
+                            <p>✓ 发货<br>✓ 回复<br>✓ 初级维权</p>
+                            <p style="color: var(--color-info); font-style: italic;">提示：一步步来，别急</p>
+                        </div>
+                    </li>
+                    <li class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>客户反馈 → 标记异常</h3>
+                            <p>如果客户提出以下任何一个，立即 @裁决人员：</p>
+                            <p>❌ 非标准需求（想改规格）<br>❌ 退款承诺<br>❌ 情绪化纠纷</p>
+                        </div>
+                    </li>
+                    <li class="step-item">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3>记录清单</h3>
+                            <p>把这次交付的步骤写成"动作包草稿"，下次可以复用</p>
+                            <p style="color: var(--color-info); font-style: italic;">提示：最少记 3 步流程</p>
+                        </div>
+                    </li>
+                </ol>
+
+                <div class="checkpoint">
+                    <div class="checkpoint-title">✓ 检查点（完成标志）</div>
+                    按标准 SKU 交付 1 次或完成演练流程
+                </div>
+
+                <div style="margin-top: var(--space-24);">
+                    <h3 style="margin-bottom: var(--space-16);">⚠️ 必须上报的异常</h3>
+                    <div class="alert">
+                        <div class="alert-title">❌ 客户要求承诺结果/退款/时效</div>
+                        <div class="alert-content">不能自己承诺，立即@裁决人员</div>
+                    </div>
+                    <div class="alert">
+                        <div class="alert-title">❌ 客户提出非标准需求</div>
+                        <div class="alert-content">想做"XXX"(非标)，不能随意答应，必须上报</div>
+                    </div>
+                    <div class="alert">
+                        <div class="alert-title">❌ 远程连接失败超过 2 次</div>
+                        <div class="alert-content">技术问题可能解决不了，@裁决调整方案</div>
+                    </div>
+                    <div class="alert">
+                        <div class="alert-title">❌ 情绪化纠纷</div>
+                        <div class="alert-content">客户想吵架/扣帽子，立即止损，@裁决接入</div>
+                    </div>
+                </div>
+
+                <div class="progress-section">
+                    <h3>任务检查清单</h3>
+                    <ul class="checklist">
+                        <li>
+                            <input type="checkbox" id="task2-1" onchange="updateProgress()">
+                            <label for="task2-1">步骤1：选择标准 SKU</label>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="task2-2" onchange="updateProgress()">
+                            <label for="task2-2">步骤2：按步骤交付</label>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="task2-3" onchange="updateProgress()">
+                            <label for="task2-3">步骤3：处理异常反馈</label>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="task2-4" onchange="updateProgress()">
+                            <label for="task2-4">步骤4：记录动作包</label>
+                        </li>
+                    </ul>
+                </div>
+
+                <div style="background-color: rgba(168, 75, 47, 0.08); padding: var(--space-20); border-radius: var(--radius-lg); border-left: 4px solid var(--color-warning); margin-top: var(--space-24);">
+                    <h3 style="margin: 0 0 var(--space-16) 0; font-size: 16px; color: var(--color-warning);">💬 遇到问题？反馈这里</h3>
+                    <p style="margin: 0 0 var(--space-12) 0; color: var(--color-text-secondary); font-size: 13px;">
+                        告诉管理员你卡在哪里了，有什么疑问，或需要什么支持
+                    </p>
+                    <textarea id="feedback-task2" style="width: 100%; height: 120px; padding: var(--space-12); border: 1px solid var(--color-border); border-radius: var(--radius-base); font-family: inherit; font-size: 14px; resize: vertical;" placeholder="例如：客户要求改规格，我不确定能不能答应&#10;或：技术连接失败了，该怎么办"></textarea>
+                    <button onclick="submitFeedback('task2')" style="margin-top: var(--space-12); padding: var(--space-12) var(--space-16); background-color: var(--color-warning); color: white; border: none; border-radius: var(--radius-base); cursor: pointer; font-weight: 500; transition: all 0.3s ease;">
+                        📤 提交反馈给管理员
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- 任务3：复盘 -->
+        <div id="task3" class="page">
+            <button class="back-btn" onclick="showPage('menuPage')">← 返回主菜单</button>
+            
+            <section class="section">
+                <h2><span class="section-icon">📝</span> 复盘：记录 1 个卡点</h2>
+                <p style="color: var(--color-text-secondary); margin-bottom: var(--space-20);">
+                    ⏰ 何时做：一天结束前
+                </p>
+
+                <ol class="steps">
+                    <li class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>回顾今天的工作</h3>
+                            <p>售前和售中过程中，有没有遇到卡住的地方？</p>
+                            <p style="color: var(--color-info); font-style: italic;">例如：不知道怎么回复、不确定能不能答应、技术操作卡住了</p>
+                        </div>
+                    </li>
+                    <li class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>截图卡点现场</h3>
+                            <p>把卡住的地方截个图</p>
+                            <p style="color: var(--color-info); font-style: italic;">提示：截图清晰，包含问题的全景</p>
+                        </div>
+                    </li>
+                    <li class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>一句话原因说明</h3>
+                            <p>简单描述为什么卡住了</p>
+                            <p style="color: var(--color-info); font-style: italic;">例如："不知道这个客户需求符不符合标准SKU"</p>
+                        </div>
+                    </li>
+                    <li class="step-item">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3>提交给管理员</h3>
+                            <p>把截图 + 说明发到 Notion 复盘表，@裁决人员</p>
+                            <p style="color: var(--color-info); font-style: italic;">提示：清晰的问题反馈有助于系统优化</p>
+                        </div>
+                    </li>
+                </ol>
+
+                <div class="checkpoint">
+                    <div class="checkpoint-title">✓ 检查点（完成标志）</div>
+                    截图 + 一句话原因说明，已提交
+                </div>
+
+                <div class="progress-section">
+                    <h3>📊 复盘模板</h3>
+                    <div style="background-color: var(--color-bg-primary); padding: var(--space-16); border-radius: var(--radius-base); border-left: 4px solid var(--color-warning); margin-bottom: var(--space-16);">
+                        <p style="margin: 0 0 8px 0; font-weight: 600;">卡点说明：</p>
+                        <textarea id="review-task3" style="width: 100%; height: 100px; padding: var(--space-12); border: 1px solid var(--color-border); border-radius: var(--radius-base); font-family: inherit; resize: none;" placeholder="例如：不知道这个客户需求是否符合标准SKU，需要@裁决确认"></textarea>
+                    </div>
+
+                    <h3 style="margin-top: var(--space-20);">任务检查清单</h3>
+                    <ul class="checklist">
+                        <li>
+                            <input type="checkbox" id="task3-1" onchange="updateProgress()">
+                            <label for="task3-1">步骤1：回顾今天工作，找卡点</label>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="task3-2" onchange="updateProgress()">
+                            <label for="task3-2">步骤2：截图卡点现场</label>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="task3-3" onchange="updateProgress()">
+                            <label for="task3-3">步骤3：一句话原因说明</label>
+                        </li>
+                        <li>
+                            <input type="checkbox" id="task3-4" onchange="updateProgress()">
+                            <label for="task3-4">步骤4：提交给管理员</label>
+                        </li>
+                    </ul>
+                </div>
+
+                <div style="background-color: rgba(168, 75, 47, 0.08); padding: var(--space-20); border-radius: var(--radius-lg); border-left: 4px solid var(--color-warning); margin-top: var(--space-24);">
+                    <h3 style="margin: 0 0 var(--space-16) 0; font-size: 16px; color: var(--color-warning);">💬 遇到问题？反馈这里</h3>
+                    <p style="margin: 0 0 var(--space-12) 0; color: var(--color-text-secondary); font-size: 13px;">
+                        告诉管理员你卡在哪里了，有什么疑问，或需要什么支持
+                    </p>
+                    <textarea id="feedback-task3" style="width: 100%; height: 120px; padding: var(--space-12); border: 1px solid var(--color-border); border-radius: var(--radius-base); font-family: inherit; font-size: 14px; resize: vertical;" placeholder="例如：不知道怎么截图&#10;或：不确定什么样的问题才算'卡点'"></textarea>
+                    <button onclick="submitFeedback('task3')" style="margin-top: var(--space-12); padding: var(--space-12) var(--space-16); background-color: var(--color-warning); color: white; border: none; border-radius: var(--radius-base); cursor: pointer; font-weight: 500; transition: all 0.3s ease;">
+                        📤 提交反馈给管理员
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- 家庭协作检查 -->
+        <div id="checklist" class="page">
+            <button class="back-btn" onclick="showPage('menuPage')">← 返回主菜单</button>
+            
+            <section class="section">
+                <h2><span class="section-icon">✅</span> 家庭协作检查表</h2>
+                <p style="color: var(--color-text-secondary); margin-bottom: var(--space-20);">
+                    每个人都完成各自的检查点，今日协作才能闭环
+                </p>
+
+                <div style="margin-bottom: var(--space-24);">
+                    <div style="background-color: rgba(33, 128, 141, 0.08); padding: var(--space-16); border-radius: var(--radius-base); border-left: 4px solid var(--color-success); margin-bottom: var(--space-16);">
+                        <h3 style="margin: 0 0 12px 0; font-size: 16px; color: var(--color-primary);">👩 母亲（连接员）</h3>
+                        <p style="margin: 0 0 12px 0; color: var(--color-text-secondary);">
+                            • 只做固定话术 + 建立连接<br>
+                            • 不要自己搜索或找入口<br>
+                            • 有问题立即@裁决人员
+                        </p>
+                        <h4 style="margin: 8px 0 8px 0; font-size: 14px; color: var(--color-success);">✓ 今日检查点：</h4>
+                        <ul class="checklist" style="margin: 0;">
+                            <li>
+                                <input type="checkbox" id="mother1" onchange="updateProgress()">
+                                <label for="mother1">未读清零或全部标记"待裁决"</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="mother2" onchange="updateProgress()">
+                                <label for="mother2">所有问题都用固定话术回复</label>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div style="background-color: rgba(168, 75, 47, 0.08); padding: var(--space-16); border-radius: var(--radius-base); border-left: 4px solid var(--color-warning); margin-bottom: var(--space-16);">
+                        <h3 style="margin: 0 0 12px 0; font-size: 16px; color: var(--color-warning);">👨 父亲（技术员）</h3>
+                        <p style="margin: 0 0 12px 0; color: var(--color-text-secondary);">
+                            • 按标准单交付 1 次<br>
+                            • 把步骤记成清单备用<br>
+                            • 新增 1 条"动作包草稿"（最少 3 步）
+                        </p>
+                        <h4 style="margin: 8px 0 8px 0; font-size: 14px; color: var(--color-warning);">✓ 今日检查点：</h4>
+                        <ul class="checklist" style="margin: 0;">
+                            <li>
+                                <input type="checkbox" id="father1" onchange="updateProgress()">
+                                <label for="father1">成功交付 1 单或完成演练</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="father2" onchange="updateProgress()">
+                                <label for="father2">记录 1 条动作包草稿（最少 3 步）</label>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div style="background-color: rgba(33, 128, 141, 0.08); padding: var(--space-16); border-radius: var(--radius-base); border-left: 4px solid var(--color-primary);">
+                        <h3 style="margin: 0 0 12px 0; font-size: 16px; color: var(--color-primary);">🧠 管理员（裁决/产品）</h3>
+                        <p style="margin: 0 0 12px 0; color: var(--color-text-secondary);">
+                            • 定边界 + 兜底异常 + 选择是否接单<br>
+                            • 确保系统能独立运转<br>
+                            • 记录问题反馈，优化流程
+                        </p>
+                        <h4 style="margin: 8px 0 8px 0; font-size: 14px; color: var(--color-primary);">✓ 今日检查点：</h4>
+                        <ul class="checklist" style="margin: 0;">
+                            <li>
+                                <input type="checkbox" id="admin1" onchange="updateProgress()">
+                                <label for="admin1">确认"只卖标准SKU，不接多样单"</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="admin2" onchange="updateProgress()">
+                                <label for="admin2">处理了所有"待裁决"的问题</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="admin3" onchange="updateProgress()">
+                                <label for="admin3">复盘了今日卡点，记录优化方向</label>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="background-color: rgba(33, 128, 141, 0.08); padding: var(--space-16); border-radius: var(--radius-base); border-left: 4px solid var(--color-info); margin-top: var(--space-24);">
+                    <h3 style="margin: 0 0 12px 0; font-size: 14px; color: var(--color-info);">📊 家庭协作闭环检查</h3>
+                    <p style="margin: 0; color: var(--color-text-secondary); font-size: 13px;">
+                        <strong>所有人都完成各自检查点 → 今日任务才算闭环</strong>
+                    </p>
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <p>🧭 MVP1 总控面板｜家庭协作搭建｜截止日期：2026年2月5日</p>
+            <p>有问题？返回主菜单选择对应任务，查看详细步骤和检查点</p>
+        </footer>
+    </div>
+
+    <script>
+        function updateDate() {
+            const today = new Date();
+            const options = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                weekday: 'long' 
+            };
+            const dateStr = today.toLocaleDateString('zh-CN', options);
+            document.getElementById('dateInfo').textContent = `📅 ${dateStr}`;
+        }
+
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            document.getElementById(pageId).classList.add('active');
+            
+            const navBtns = document.querySelectorAll('.nav-btn');
+            navBtns.forEach(btn => btn.classList.remove('active'));
+            
+            const activeBtn = Array.from(navBtns).find(btn => {
+                const targetPage = btn.getAttribute('onclick').match(/showPage\('([^']+)'\)/)[1];
+                return targetPage === pageId;
+            });
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+
+            window.scrollTo(0, 0);
+        }
+
+        function updateProgress() {
+            const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+            const checkedCount = Array.from(allCheckboxes).filter(cb => cb.checked).length;
+            const totalCount = allCheckboxes.length;
+            const percentage = totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
+
+            document.getElementById('completedCount').textContent = Math.floor(checkedCount / 4);
+            document.getElementById('completionRate').textContent = percentage + '%';
+        }
+
+        function submitFeedback(taskId) {
+            const feedbackArea = document.getElementById('feedback-' + taskId);
+            const feedbackText = feedbackArea.value.trim();
+
+            if (!feedbackText) {
+                alert('请先描述你遇到的问题');
+                return;
+            }
+
+            const timestamp = new Date().toLocaleString('zh-CN');
+            const message = `【${taskId.toUpperCase()}任务反馈】${timestamp}\n${feedbackText}`;
+            
+            feedbackArea.style.opacity = '0.5';
+            feedbackArea.disabled = true;
+            
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✓ 已提交！';
+            btn.style.backgroundColor = 'var(--color-success)';
+            
+            setTimeout(() => {
+                feedbackArea.style.opacity = '1';
+                feedbackArea.disabled = false;
+                feedbackArea.value = '';
+                btn.textContent = originalText;
+                btn.style.backgroundColor = 'var(--color-warning)';
+            }, 2000);
+
+            console.log('反馈提交：', message);
+        }
+
+        updateDate();
+        updateProgress();
+    </script>
 </body>
 </html>
