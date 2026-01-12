@@ -355,45 +355,6 @@
     </style>
 </head>
 <body>
-    <!-- 密码保护层 -->
-<div id="passwordProtection" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-    <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center; max-width: 400px; width: 90%;">
-        <h2 style="margin: 0 0 10px 0; color: #333; font-size: 28px;">🔐 母亲执行面板</h2>
-        <p style="color: #666; margin-bottom: 30px; font-size: 14px;">请输入访问密码</p>
-        <input type="password" id="passwordInput" placeholder="请输入密码" style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; margin-bottom: 20px; box-sizing: border-box; transition: all 0.3s;" onkeypress="if(event.key==='Enter')checkPassword()">
-        <button onclick="checkPassword()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.3s;">解锁进入</button>
-        <p id="errorMsg" style="color: #e74c3c; margin-top: 15px; font-size: 14px; display: none;">❌ 密码错误，请重试</p>
-    </div>
-</div>
-
-<script>
-// 密码验证函数
-function checkPassword() {
-    const password = document.getElementById('passwordInput').value;
-    const correctPassword = 'muqin2026'; // 在这里设置您的密码
-    
-    if (password === correctPassword) {
-        document.getElementById('passwordProtection').style.display = 'none';
-        document.getElementById('errorMsg').style.display = 'none';
-        // 保存验证状态到sessionStorage（关闭浏览器后失效）
-        sessionStorage.setItem('authenticated', 'true');
-    } else {
-        document.getElementById('errorMsg').style.display = 'block';
-        document.getElementById('passwordInput').value = '';
-        document.getElementById('passwordInput').focus();
-    }
-}
-
-// 页面加载时检查是否已验证
-window.addEventListener('DOMContentLoaded', function() {
-    if (sessionStorage.getItem('authenticated') === 'true') {
-        document.getElementById('passwordProtection').style.display = 'none';
-    } else {
-        document.getElementById('passwordInput').focus();
-    }
-});
-</script>
-
     <div class="container">
         <header>
             <h1>🧭 母亲每日执行面板</h1>
